@@ -11,6 +11,7 @@ contract CallOption {
     uint256 public strikePrice;
     uint256 public quantity;
     uint256 public expiration;
+    int256 public latestPrice;
     address public buyer;
     bool public inited;
     bool public bought;
@@ -91,10 +92,12 @@ contract CallOption {
 
     function execute() external onlyBuyer notExecuted isInited notExpired {
         require(_checkPosition(), "Option is out of the money");
+        (, int256 price,,,) = priceOracle.latestRoundData();
         executed = true;
         uint256 amountToPay = strikeValue();
         require(premiumToken.transferFrom(buyer, creator, amountToPay), "Payment failed");
         require(IERC20(asset).transfer(buyer, quantity), "Asset transfer failed");
+        latestPrice = price;
     }
 
     function _checkPosition() internal view returns (bool) {
