@@ -92,17 +92,16 @@ contract PutOption {
 
     function execute() external onlyBuyer notExecuted isInited notExpired {
         require(_checkPosition(), "Option is out of the money");
-        (, int256 price,,,) = priceOracle.latestRoundData();
         executed = true;
         uint256 amountToTransfer = strikeValue();
         require(premiumToken.transfer(buyer, amountToTransfer), "Asset transfer failed");
         require(IERC20(asset).transferFrom(buyer, creator, quantity), "Payment failed");
-        latestPrice = price;
     }
 
-    function _checkPosition() internal view returns (bool) {
+    function _checkPosition() internal returns (bool) {
         (, int256 price,, uint256 updatedAt,) = priceOracle.latestRoundData();
         require(updatedAt + 2 minutes > block.timestamp, "Price needs to be updated first");
+        latestPrice = price;
         return uint256(price) <= strikePrice;
     }
 
