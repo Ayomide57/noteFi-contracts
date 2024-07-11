@@ -11,7 +11,7 @@ contract PutOption {
     uint256 public strikePrice;
     uint256 public quantity;
     uint256 public expiration;
-    int256 public latestPrice;
+    uint256 public executedPrice;
     address public buyer;
     bool public inited;
     bool public bought;
@@ -101,7 +101,7 @@ contract PutOption {
     function _checkPosition() internal returns (bool) {
         (, int256 price,, uint256 updatedAt,) = priceOracle.latestRoundData();
         require(updatedAt + 2 minutes > block.timestamp, "Price needs to be updated first");
-        latestPrice = price;
+        executedPrice = uint256(price);
         return uint256(price) <= strikePrice;
     }
 
