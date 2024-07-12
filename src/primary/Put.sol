@@ -46,6 +46,63 @@ contract PutOption {
     // oracle to call for asset/NOTE price feed
     AggregatorV3Interface public priceOracle;
 
+
+    // Events 
+    // init function Event
+    event initEvent(
+        address indexed from,
+        address indexed to,
+        uint256 indexed quantity,
+        bool inited
+    );
+
+    // buy function event
+    event buyEvent(
+        address indexed from,
+        address indexed to,
+        uint256 indexed quantity,
+        bool bought
+    );
+
+    // execute function event
+    event executeEvent(
+        address indexed from,
+        address indexed to,
+        uint256 indexed quantity,
+        uint256 amountToTransfer,
+        bool executed
+    );
+
+
+    // cancel function event
+    event cancelEvent(
+        address indexed from,
+        address indexed to,
+        uint256 indexed quantity,
+        bool executed
+    );
+
+    // withdraw function event
+    event withdrawEvent(
+        address indexed from,
+        address indexed to,
+        uint256 indexed quantity,
+        bool executed
+    );
+
+    // adjustPremium function event
+    event adjustPremiumEvent(
+        uint256 indexed premium
+    );
+
+    // tranfer function event, event for when buyer is being tranferred to a new buyer
+    event transferBuyerRoleEvent(
+        address indexed buyer
+    );
+
+
+
+
     /* ============ Constructor ============ */
 
     constructor(
@@ -131,6 +188,7 @@ contract PutOption {
         require(inited == false, "Option contract has already been initialized");
         inited = true;
         require(premiumToken.transferFrom(creator, address(this), strikeValue()), "Transfer failed");
+        emit initEvent(creator, address(this), strikeValue(), inited);
     }
 
     /**
@@ -142,6 +200,7 @@ contract PutOption {
         bought = true;
         buyer = msg.sender;
         require(premiumToken.transferFrom(msg.sender, creator, premium), "Premium transfer failed");
+        emit buyEvent(msg.sender, creator, premium, bought);
     }
 
     /**
@@ -151,6 +210,7 @@ contract PutOption {
      */
     function transfer(address newBuyer) external onlyBuyer isInited notExpired {
         buyer = newBuyer;
+        emit transferBuyerRoleEvent(newBuyer);
     }
 
     /**
@@ -164,6 +224,7 @@ contract PutOption {
         uint256 amountToTransfer = strikeValue();
         require(premiumToken.transfer(buyer, amountToTransfer), "Asset transfer failed");
         require(IERC20(asset).transferFrom(buyer, creator, quantity), "Payment failed");
+        emit executeEvent(buyer, creator, quantity, amountToTransfer, executed);
     }
 
     /**
@@ -186,6 +247,7 @@ contract PutOption {
     function cancel() external onlyCreator notBought isInited notExpired {
         executed = true;
         require(premiumToken.transfer(creator, strikeValue()), "Asset transfer failed");
+        emit cancelEvent(address(premiumToken), creator, strikeValue(), executed);
     }
 
     /**
@@ -198,6 +260,7 @@ contract PutOption {
         require(!executed, "Option already executed");
         executed = true;
         require(premiumToken.transfer(creator, strikeValue()), "Asset transfer failed");
+        emit withdrawEvent(address(premiumToken), creator, strikeValue(), executed);
     }
 
     /**
@@ -210,6 +273,7 @@ contract PutOption {
      */
     function adjustPremium(uint256 newPremium) external onlyCreator notBought notExpired {
         premium = newPremium;
+        emit adjustPremiumEvent(newPremium);
     }
 
     /**
