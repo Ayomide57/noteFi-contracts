@@ -19,6 +19,14 @@ contract PutOption {
     IERC20 public premiumToken;
     AggregatorV3Interface public priceOracle;
 
+    event TranferTokenEvent(
+        address indexed from,
+        address indexed to,
+        uint256 indexed quantity,
+        uint256 amountToPay
+    );
+
+
     constructor(
         address _asset,
         address _creator,
@@ -77,6 +85,7 @@ contract PutOption {
         require(inited == false, "Option contract has already been initialized");
         inited = true;
         require(premiumToken.transferFrom(creator, address(this), strikeValue()), "Transfer failed");
+        emit TranferTokenEvent(creator, address(this), strikeValue(), 0);
     }
 
     function buy() external notBought isInited notExpired {
@@ -84,6 +93,7 @@ contract PutOption {
         bought = true;
         buyer = msg.sender;
         require(premiumToken.transferFrom(msg.sender, creator, premium), "Premium transfer failed");
+        emit TranferTokenEvent(msg.sender, creator, premium, 0);
     }
 
     function transfer(address newBuyer) external onlyBuyer isInited notExpired {
@@ -96,6 +106,7 @@ contract PutOption {
         uint256 amountToTransfer = strikeValue();
         require(premiumToken.transfer(buyer, amountToTransfer), "Asset transfer failed");
         require(IERC20(asset).transferFrom(buyer, creator, quantity), "Payment failed");
+        emit TranferTokenEvent(buyer, creator, quantity, amountToTransfer);
     }
 
     function _checkPosition() internal returns (bool) {
@@ -108,6 +119,7 @@ contract PutOption {
     function cancel() external onlyCreator notBought isInited notExpired {
         executed = true;
         require(premiumToken.transfer(creator, strikeValue()), "Asset transfer failed");
+        emit TranferTokenEvent(address(premiumToken), creator, strikeValue(), 0);
     }
 
     function withdraw() external onlyCreator isInited {
@@ -115,6 +127,7 @@ contract PutOption {
         require(!executed, "Option already executed");
         executed = true;
         require(premiumToken.transfer(creator, strikeValue()), "Asset transfer failed");
+        emit TranferTokenEvent(address(premiumToken), creator, strikeValue(), 0);
     }
 
     function adjustPremium(uint256 newPremium) external onlyCreator notBought notExpired {

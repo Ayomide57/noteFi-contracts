@@ -19,6 +19,12 @@ contract CallOption {
     IERC20 public premiumToken;
     AggregatorV3Interface public priceOracle;
 
+    event TranferTokenEvent(
+        address indexed from,
+        address indexed to,
+        uint256 indexed quantity,
+        uint256 amountToPay
+    );
     constructor(
         address _asset,
         address _creator,
@@ -77,6 +83,7 @@ contract CallOption {
         require(inited == false, "Option contract has already been initialized");
         inited = true;
         require(IERC20(asset).transferFrom(creator, address(this), quantity), "Transfer failed");
+        emit TranferTokenEvent(asset, creator, quantity, 0);
     }
 
     function buy() external notBought isInited notExpired {
@@ -84,6 +91,7 @@ contract CallOption {
         bought = true;
         buyer = msg.sender;
         require(premiumToken.transferFrom(msg.sender, creator, premium), "Premium transfer failed");
+        emit TranferTokenEvent(msg.sender, creator, premium, 0);
     }
 
     function transfer(address newBuyer) external onlyBuyer isInited notExpired {
@@ -96,6 +104,7 @@ contract CallOption {
         uint256 amountToPay = strikeValue();
         require(premiumToken.transferFrom(buyer, creator, amountToPay), "Payment failed");
         require(IERC20(asset).transfer(buyer, quantity), "Asset transfer failed");
+        emit TranferTokenEvent(buyer, creator, quantity, amountToPay);
     }
 
     function _checkPosition() internal returns (bool) {
@@ -108,6 +117,7 @@ contract CallOption {
     function cancel() external onlyCreator notBought isInited notExpired {
         executed = true;
         require(IERC20(asset).transfer(creator, quantity), "Asset transfer failed");
+        emit TranferTokenEvent(asset, creator, quantity, 0);
     }
 
     function withdraw() external onlyCreator isInited {
@@ -115,6 +125,7 @@ contract CallOption {
         require(!executed, "Option already executed");
         executed = true;
         require(IERC20(asset).transfer(creator, quantity), "Asset transfer failed");
+        emit TranferTokenEvent(asset, creator, quantity, 0);
     }
 
     function adjustPremium(uint256 newPremium) external onlyCreator notBought notExpired {
