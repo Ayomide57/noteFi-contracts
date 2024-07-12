@@ -50,20 +50,11 @@ contract CallOption {
     // Events 
 
 
-    // init function Event
-    event initEvent(
-        address indexed from,
-        address indexed to,
-        uint256 indexed quantity,
-        bool inited
-    );
-
     // buy function event
     event buyEvent(
         address indexed from,
         address indexed to,
-        uint256 indexed quantity,
-        bool bought
+        uint256 indexed quantity
     );
 
     // execute function event
@@ -71,24 +62,21 @@ contract CallOption {
         address indexed from,
         address indexed to,
         uint256 indexed quantity,
-        uint256 amountToPay,
-        bool executed
+        uint256 amountToPay
     );
 
     // cancel function event
     event cancelEvent(
         address indexed from,
         address indexed to,
-        uint256 indexed quantity,
-        bool executed
+        uint256 indexed quantity
     );
 
     // withdraw function event
     event withdrawEvent(
         address indexed from,
         address indexed to,
-        uint256 indexed quantity,
-        bool executed
+        uint256 indexed quantity
     );
 
     // adjustPremium function event
@@ -187,7 +175,6 @@ contract CallOption {
         require(inited == false, "Option contract has already been initialized");
         inited = true;
         require(IERC20(asset).transferFrom(creator, address(this), quantity), "Transfer failed");
-        emit initEvent(asset, creator, quantity, inited);
     }
 
     /**
@@ -199,7 +186,7 @@ contract CallOption {
         bought = true;
         buyer = msg.sender;
         require(premiumToken.transferFrom(msg.sender, creator, premium), "Premium transfer failed");
-        emit buyEvent(msg.sender, creator, premium, bought);
+        emit buyEvent(msg.sender, creator, premium);
     }
 
     /**
@@ -223,7 +210,7 @@ contract CallOption {
         uint256 amountToPay = strikeValue();
         require(premiumToken.transferFrom(buyer, creator, amountToPay), "Payment failed");
         require(IERC20(asset).transfer(buyer, quantity), "Asset transfer failed");
-        emit executeEvent(buyer, creator, quantity, amountToPay, executed);
+        emit executeEvent(buyer, creator, quantity, amountToPay);
     }
 
     /**
@@ -246,7 +233,7 @@ contract CallOption {
     function cancel() external onlyCreator notBought isInited notExpired {
         executed = true;
         require(IERC20(asset).transfer(creator, quantity), "Asset transfer failed");
-        emit cancelEvent(asset, creator, quantity, executed);
+        emit cancelEvent(asset, creator, quantity);
     }
 
     /**
@@ -259,7 +246,7 @@ contract CallOption {
         require(!executed, "Option already executed");
         executed = true;
         require(IERC20(asset).transfer(creator, quantity), "Asset transfer failed");
-        emit withdrawEvent(asset, creator, quantity, executed);
+        emit withdrawEvent(asset, creator, quantity);
     }
 
     /**
