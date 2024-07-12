@@ -77,12 +77,14 @@ contract CallOption {
 
     // adjustPremium function event
     event adjustPremiumEvent(
-        uint256 indexed premium
+        uint256 indexed oldPremium,
+        uint256 indexed newPremium
     );
 
     // tranfer function event, event for when buyer is being tranferred to a new buyer
     event transferBuyerRoleEvent(
-        address indexed buyer
+        address indexed oldBuyer,
+        address indexed newBuyer
     );
 
 
@@ -191,8 +193,8 @@ contract CallOption {
      * @param newBuyer - address of the new buyer
      */
     function transfer(address newBuyer) external onlyBuyer isInited notExpired {
+        emit transferBuyerRoleEvent(buyer, newBuyer);
         buyer = newBuyer;
-        emit transferBuyerRoleEvent(newBuyer);
     }
 
     /**
@@ -254,8 +256,8 @@ contract CallOption {
      * @param newPremium - new amount in NOTE
      */
     function adjustPremium(uint256 newPremium) external onlyCreator notBought notExpired {
+        emit adjustPremiumEvent(premium, newPremium);
         premium = newPremium;
-        emit adjustPremiumEvent(newPremium);
     }
 
     /**
