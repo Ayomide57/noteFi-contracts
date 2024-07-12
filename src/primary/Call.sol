@@ -67,15 +67,13 @@ contract CallOption {
 
     // cancel function event
     event cancelEvent(
-        address indexed from,
-        address indexed to,
+        address indexed writer,
         uint256 indexed quantity
     );
 
     // withdraw function event
     event withdrawEvent(
-        address indexed from,
-        address indexed to,
+        address indexed writer,
         uint256 indexed quantity
     );
 
@@ -233,7 +231,7 @@ contract CallOption {
     function cancel() external onlyCreator notBought isInited notExpired {
         executed = true;
         require(IERC20(asset).transfer(creator, quantity), "Asset transfer failed");
-        emit cancelEvent(asset, creator, quantity);
+        emit cancelEvent(creator, quantity);
     }
 
     /**
@@ -246,7 +244,7 @@ contract CallOption {
         require(!executed, "Option already executed");
         executed = true;
         require(IERC20(asset).transfer(creator, quantity), "Asset transfer failed");
-        emit withdrawEvent(asset, creator, quantity);
+        emit withdrawEvent(creator, quantity);
     }
 
     /**

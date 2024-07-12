@@ -67,15 +67,13 @@ contract PutOption {
 
     // cancel function event
     event cancelEvent(
-        address indexed from,
-        address indexed to,
+        address indexed writer,
         uint256 indexed quantity
     );
 
     // withdraw function event
     event withdrawEvent(
-        address indexed from,
-        address indexed to,
+        address indexed writer,
         uint256 indexed quantity
     );
 
@@ -237,7 +235,7 @@ contract PutOption {
     function cancel() external onlyCreator notBought isInited notExpired {
         executed = true;
         require(premiumToken.transfer(creator, strikeValue()), "Asset transfer failed");
-        emit cancelEvent(address(premiumToken), creator, strikeValue());
+        emit cancelEvent(creator, strikeValue());
     }
 
     /**
@@ -250,7 +248,7 @@ contract PutOption {
         require(!executed, "Option already executed");
         executed = true;
         require(premiumToken.transfer(creator, strikeValue()), "Asset transfer failed");
-        emit withdrawEvent(address(premiumToken), creator, strikeValue());
+        emit withdrawEvent(creator, strikeValue());
     }
 
     /**
