@@ -51,17 +51,15 @@ contract PutOption {
 
     // buy function event
     event buyEvent(
-        address indexed from,
-        address indexed to,
-        uint256 indexed quantity
+        address indexed buyer,
+        uint256 indexed premiumPaid
     );
 
     // execute function event
     event executeEvent(
-        address indexed from,
-        address indexed to,
+        address indexed buyer,
         uint256 indexed quantity,
-        uint256 amountToTransfer
+        uint256 amountPaid
     );
 
 
@@ -188,7 +186,7 @@ contract PutOption {
         bought = true;
         buyer = msg.sender;
         require(premiumToken.transferFrom(msg.sender, creator, premium), "Premium transfer failed");
-        emit buyEvent(msg.sender, creator, premium);
+        emit buyEvent(msg.sender, premium);
     }
 
     /**
@@ -212,7 +210,7 @@ contract PutOption {
         uint256 amountToTransfer = strikeValue();
         require(premiumToken.transfer(buyer, amountToTransfer), "Asset transfer failed");
         require(IERC20(asset).transferFrom(buyer, creator, quantity), "Payment failed");
-        emit executeEvent(buyer, creator, quantity, amountToTransfer);
+        emit executeEvent(buyer, quantity, amountToTransfer);
     }
 
     /**

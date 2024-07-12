@@ -52,17 +52,15 @@ contract CallOption {
 
     // buy function event
     event buyEvent(
-        address indexed from,
-        address indexed to,
-        uint256 indexed quantity
+        address indexed buyer,
+        uint256 indexed premiumPaid
     );
 
     // execute function event
     event executeEvent(
-        address indexed from,
-        address indexed to,
+        address indexed buyer,
         uint256 indexed quantity,
-        uint256 amountToPay
+        uint256 amountPaid
     );
 
     // cancel function event
@@ -184,7 +182,7 @@ contract CallOption {
         bought = true;
         buyer = msg.sender;
         require(premiumToken.transferFrom(msg.sender, creator, premium), "Premium transfer failed");
-        emit buyEvent(msg.sender, creator, premium);
+        emit buyEvent(msg.sender, premium);
     }
 
     /**
@@ -208,7 +206,7 @@ contract CallOption {
         uint256 amountToPay = strikeValue();
         require(premiumToken.transferFrom(buyer, creator, amountToPay), "Payment failed");
         require(IERC20(asset).transfer(buyer, quantity), "Asset transfer failed");
-        emit executeEvent(buyer, creator, quantity, amountToPay);
+        emit executeEvent(buyer, quantity, amountToPay);
     }
 
     /**
