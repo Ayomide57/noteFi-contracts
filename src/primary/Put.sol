@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {AggregatorV3Interface} from "./AggregatorV3Interface.sol";
+import {AggregatorV3Interface} from "./Interfaces/AggregatorV3Interface.sol";
 
 /**
  * @title PutOption
