@@ -123,6 +123,54 @@ contract OfferTest is Test {
         noteERC20.approve(address(offer), 10e18);
         callOption.transfer(address(offer));
 
+        //assertEq(callOption.buyer(), address(offer));
+        vm.stopPrank();
+        assertEq(offer.executed(), false);
+        deal(noteToken, newBuyer, offer.ask());
+
+
+        vm.startPrank(buyer);
+        noteERC20.approve(address(offer), 10e18);
+        offer.cancel();
+
+       assertEq(callOption.buyer(), buyer);
+    }
+
+    function testCancelFails() public {
+        assertEq(callOption.executed(), false);
+
+        deal(ethToken, seller, 10e16);
+
+        // initialise callOption contract
+        vm.startPrank(seller);
+        ethERC20.approve(address(callOption), 10e16);
+        callOption.init();
+        vm.stopPrank();
+
+        assertEq(callOption.inited(), true);
+        assertEq(callOption.buyer() != address(0), false);
+
+        deal(noteToken, buyer, 100e18);
+
+        // call buy from callOption contract, by doing this you set the buyer for the Option
+        vm.startPrank(buyer);
+        noteERC20.approve(address(callOption), 10e18);
+        callOption.buy();
+
+        assertEq(callOption.buyer() != address(0), true);
+        assertEq(callOption.executed(), false);
+        assertEq(callOption.buyer(), buyer);
+        assertEq(callOption.strikeValue(), 15e18);
+
+        // create offer for callOption
+        offerFactory.createOffer(address(callOption), ask);
+        uint256 lastOffer = offerFactory.getOffersCount() - 1;
+        offer = Offer(offerFactory.offers(lastOffer));
+
+        // transfer the buyer right to the offer contract
+        noteERC20.approve(address(offer), 10e18);
+        callOption.transfer(address(offer));
+
         assertEq(callOption.buyer(), address(offer));
         vm.stopPrank();
         assertEq(offer.executed(), false);
