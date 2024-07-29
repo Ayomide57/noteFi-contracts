@@ -80,7 +80,6 @@ contract OfferTest is Test {
         assertEq(offer.executed(), false);
         deal(noteToken, newBuyer, offer.ask());
 
-
         // The seller accept the offer and tranfer the Option to the new buyer
         vm.startPrank(newBuyer);
         noteERC20.approve(address(offer), offer.ask());
@@ -129,7 +128,6 @@ contract OfferTest is Test {
         assertEq(offer.executed(), false);
         deal(noteToken, newBuyer, offer.ask());
 
-
         // The seller accept the offer and tranfer the Option to the new buyer
         vm.startPrank(newBuyer);
         noteERC20.approve(address(offer), offer.ask());
@@ -146,7 +144,7 @@ contract OfferTest is Test {
         noteERC20.approve(address(offer), 10e18);
         offer.cancel();
 
-       // assertEq(callOption.buyer(), buyer);
+       assertEq(callOption.buyer(), buyer);
     }
 
 }
