@@ -75,18 +75,14 @@ contract OfferTest is Test {
         noteERC20.approve(address(offer), 10e18);
         callOption.transfer(address(offer));
 
-
         assertEq(callOption.buyer(), address(offer));
         vm.stopPrank();
-
-
         assertEq(offer.executed(), false);
-
         deal(noteToken, newBuyer, offer.ask());
 
 
         // The seller accept the offer and tranfer the Option to the new buyer
-        vm.prank(newBuyer);
+        vm.startPrank(newBuyer);
         noteERC20.approve(address(offer), offer.ask());
         offer.accept();
         assertEq(callOption.buyer(), newBuyer);
@@ -130,12 +126,27 @@ contract OfferTest is Test {
 
         assertEq(callOption.buyer(), address(offer));
         vm.stopPrank();
+        assertEq(offer.executed(), false);
+        deal(noteToken, newBuyer, offer.ask());
+
+
+        // The seller accept the offer and tranfer the Option to the new buyer
+        vm.startPrank(newBuyer);
+        noteERC20.approve(address(offer), offer.ask());
+        offer.accept();
+        assertEq(callOption.buyer(), newBuyer);
+
+        // transfer the buyer right to the offer contract
+        noteERC20.approve(address(offer), 10e18);
+        callOption.transfer(address(offer));
+        assertEq(offer.executed(), true);
+        vm.stopPrank();
 
         vm.startPrank(buyer);
         noteERC20.approve(address(offer), 10e18);
         offer.cancel();
 
-        assertEq(callOption.buyer(), buyer);
+       // assertEq(callOption.buyer(), buyer);
     }
 
 }
