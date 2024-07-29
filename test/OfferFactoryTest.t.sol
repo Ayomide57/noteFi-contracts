@@ -22,8 +22,7 @@ contract OfferFactoryTest is Test {
 
     address seller = makeAddr("seller");
     address buyer = makeAddr("buyer");
-    address newBuyer = makeAddr("newBuyer");
-        uint256 ask = 1510e8;
+    uint256 ask = 15e18;
 
     function setUp() public {
 
@@ -67,9 +66,14 @@ contract OfferFactoryTest is Test {
 
         // create offer for callOption
         offerFactory.createOffer(address(callOption), ask);
-        address[] memory offers = offerFactory.getOffers();
-        offer = Offer(offers[offers.length - 1]);
+        uint256 lastOffer = offerFactory.getOffersCount() - 1;
+        offer = Offer(offerFactory.offers(lastOffer));
         assertEq(offer.ask(), ask);
+
+        // transfer the buyer right to the offer contract
+        noteERC20.approve(address(offer), 10e18);
+        callOption.transfer(address(offer));
+        assertEq(callOption.buyer(), address(offer));
 
         vm.stopPrank();
 

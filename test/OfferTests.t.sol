@@ -23,6 +23,7 @@ contract OfferTest is Test {
     address seller = makeAddr("seller");
     address buyer = makeAddr("buyer");
     address newBuyer = makeAddr("newBuyer");
+    uint256 ask = 15e18;
 
     
     function setUp() public {
@@ -40,8 +41,6 @@ contract OfferTest is Test {
 
 
     function testBuyAndAccept() public {
-        uint256 ask = 1510e8;
-
         assertEq(callOption.executed(), false);
 
         deal(ethToken, seller, 10e16);
@@ -69,37 +68,32 @@ contract OfferTest is Test {
 
         // create offer for callOption
         offerFactory.createOffer(address(callOption), ask);
-        address[] memory offers = offerFactory.getOffers();
-        offer = Offer(offers[offers.length - 1]);
+        uint256 lastOffer = offerFactory.getOffersCount() - 1;
+        offer = Offer(offerFactory.offers(lastOffer));
 
         // transfer the buyer right to the offer contract
         noteERC20.approve(address(offer), 10e18);
         callOption.transfer(address(offer));
+
+
+        assertEq(callOption.buyer(), address(offer));
         vm.stopPrank();
 
 
         assertEq(offer.executed(), false);
 
-        deal(ethToken, newBuyer, 1000000e16);
-        deal(ethToken, address(offer), 1000000e16);
+        deal(noteToken, newBuyer, offer.ask());
 
-        //assertEq(noteERC20.balanceOf(address(offer)), 0);
 
         // The seller accept the offer and tranfer the Option to the new buyer
         vm.prank(newBuyer);
-        ethERC20.approve(address(offer), offer.ask());
+        noteERC20.approve(address(offer), offer.ask());
         offer.accept();
-        //assertEq(noteERC20.balanceOf(newBuyer), 0);
-        //assertEq(noteERC20.balanceOf(address(offer)), 0);
+        assertEq(callOption.buyer(), newBuyer);
 
-
-
-        //assertEq(offer.executed(), true);
     }
 
     function testCancel() public {
-                uint256 ask = 1510e8;
-
         assertEq(callOption.executed(), false);
 
         deal(ethToken, seller, 10e16);
@@ -127,19 +121,21 @@ contract OfferTest is Test {
 
         // create offer for callOption
         offerFactory.createOffer(address(callOption), ask);
-        address[] memory offers = offerFactory.getOffers();
-        offer = Offer(offers[offers.length - 1]);
+        uint256 lastOffer = offerFactory.getOffersCount() - 1;
+        offer = Offer(offerFactory.offers(lastOffer));
 
         // transfer the buyer right to the offer contract
         noteERC20.approve(address(offer), 10e18);
         callOption.transfer(address(offer));
+
+        assertEq(callOption.buyer(), address(offer));
         vm.stopPrank();
 
         vm.startPrank(buyer);
         noteERC20.approve(address(offer), 10e18);
         offer.cancel();
 
-   
+        assertEq(callOption.buyer(), buyer);
     }
 
 }
